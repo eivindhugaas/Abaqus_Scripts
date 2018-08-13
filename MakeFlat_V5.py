@@ -47,23 +47,36 @@ for i in range(0,len(MeshOnCircumferenceN)):
 
     #--------- Initiate ----------
     modelname="Flat_%s"%(n)
+    
     jobname="Job_Flat_%s"%(n)
+    jobnameUMAT="Job_Flat_%s_UMAT"%(n)
     
     
     NameOfFile="LE22_Path_Longt_%s_%s_%s_%s"%(M,MRad,MCoarse,MSides)
     NameOfFile2="LE11_Path_Longt_%s_%s_%s_%s"%(M,MRad,MCoarse,MSides)
     
+    NameOfFileUMAT=NameOfFile+"UMAT"
+    NameOfFile2UMAT=NameOfFile2+"UMAT"
+    
     NameOfResultFile1="LE22"+modelname+".rpt"    
     NameOfResultFile2="LE11"+modelname+".rpt"
     
+    NameOfResultFile1UMAT="LE22_UMAT"+modelname+".rpt"    
+    NameOfResultFile2UMAT="LE11_UMAT"+modelname+".rpt"    
+    
     XYPlotName="XY_Plot_Flat_LE22_%s"%(n)    
     XYPlotName2="XY_Plo_Flat_LE11_%s"%(n) 
+    
+    XYPlotNameUMAT="XY_Plot_Flat_LE22_UMAT_%s"%(n)    
+    XYPlotName2UMAT="XY_Plo_Flat_LE11_UMAT_%s"%(n)     
     #-----------------------------
     writefile=r"C:\Users\eivinhug\NTNU\PhD\AbaqusModels\SplitDisk\MessAround"
 
     jobfolder=(writefile+"\\%s.odb")%(jobname)
-
+    jobfolderUMAT=(writefile+"\\%s.odb")%(jobnameUMAT)
+    
     joblogname=(writefile+"\\%s.log")%(jobname)    
+    joblognameUMAT=(writefile+"\\%s.log")%(jobnameUMAT)    
     
     if not os.path.exists(writefile):
         os.makedirs(writefile)    
@@ -218,7 +231,6 @@ for i in range(0,len(MeshOnCircumferenceN)):
     p.PartitionCellByExtrudeEdge(line=d1[4].axis3, cells=pickedCells, 
         edges=pickedEdges, sense=REVERSE)
     
-    
     #------- Remove edges ---------
     
     e = p.edges
@@ -231,13 +243,25 @@ for i in range(0,len(MeshOnCircumferenceN)):
     mdb.models[modelname].materials['GFRP'].Elastic(
         type=ENGINEERING_CONSTANTS, table=((44800.0, 12100.0, 12100.0, 0.3, 0.0879, 
         0.3, 3400.0, 3400.0, 3400.0), ))
+    mdb.models[modelname].materials['GFRP'].Density(table=((1.59e-09, ), ))
     
     #------ Make Section -------
+
+    #sectionLayer1 = section.SectionLayer(material='GFRP', thickness=1.0, 
+        #orientAngle=0.0, numIntPts=1, plyName='Layer')
+    #mdb.models[modelname].CompositeSolidSection(name='Sect_VacInf', 
+        #layupName='', symmetric=False, layup=(sectionLayer1, ))
     
-    sectionLayer1 = section.SectionLayer(material='GFRP', thickness=1.0, 
-        orientAngle=0.0, numIntPts=1, plyName='Layer')
-    mdb.models[modelname].CompositeSolidSection(name='Sect_VacInf', 
-        layupName='', symmetric=False, layup=(sectionLayer1, ))
+    mdb.models[modelname].HomogeneousSolidSection(name='Sect_VacInf', material='GFRP', 
+        thickness=None)    
+        
+        #p = mdb.models['Flat_1'].parts['Part-1']
+        #region = p.sets['Set_Layer_1']
+        #p = mdb.models['Flat_1'].parts['Part-1']
+        #p.SectionAssignment(region=region, sectionName='Section-2', offset=0.0, 
+            #offsetType=MIDDLE_SURFACE, offsetField='', 
+            #thicknessAssignment=FROM_SECTION)    
+    
     
     #----- Make material orientations and assign sections -----
     
@@ -246,37 +270,46 @@ for i in range(0,len(MeshOnCircumferenceN)):
     cells = c.getSequenceFromMask(mask=('[#1820011 ]', ), )
     region = p.Set(cells=cells, name='Set_Layer_1')
     p = mdb.models[modelname].parts['Part-1']
-    p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
-        offsetType=MIDDLE_SURFACE, offsetField='', 
-        thicknessAssignment=FROM_SECTION)
+    
+    p.SectionAssignment(region=region, sectionName='Sect_VacInf', thicknessAssignment=FROM_SECTION)
+    
+    #p.SectionAssignment(region=p.sets['damageable'], sectionName='Section-damageable', thicknessAssignment=FROM_SECTION)
     
     cells = c.getSequenceFromMask(mask=('[#442300 ]', ), )
     region = p.Set(cells=cells, name='Set_Layer_2')
     p = mdb.models[modelname].parts['Part-1']
-    p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
-        offsetType=MIDDLE_SURFACE, offsetField='', 
-        thicknessAssignment=FROM_SECTION)
+    #p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
+    #    offsetType=MIDDLE_SURFACE, offsetField='', 
+    #    thicknessAssignment=FROM_SECTION)
+    
+    p.SectionAssignment(region=region, sectionName='Sect_VacInf', thicknessAssignment=FROM_SECTION)
     
     cells = c.getSequenceFromMask(mask=('[#84422 ]', ), )
     region = p.Set(cells=cells, name='Set_Layer_3')
     p = mdb.models[modelname].parts['Part-1']
-    p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
-        offsetType=MIDDLE_SURFACE, offsetField='', 
-        thicknessAssignment=FROM_SECTION)
+    #p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
+    #    offsetType=MIDDLE_SURFACE, offsetField='', 
+    #    thicknessAssignment=FROM_SECTION)
+    
+    p.SectionAssignment(region=region, sectionName='Sect_VacInf', thicknessAssignment=FROM_SECTION)
     
     cells = c.getSequenceFromMask(mask=('[#108844 ]', ), )
     region = p.Set(cells=cells, name='Set_Layer_4')
     p = mdb.models[modelname].parts['Part-1']
-    p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
-        offsetType=MIDDLE_SURFACE, offsetField='', 
-        thicknessAssignment=FROM_SECTION)
+    #p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
+    #    offsetType=MIDDLE_SURFACE, offsetField='', 
+    #    thicknessAssignment=FROM_SECTION)
+    
+    p.SectionAssignment(region=region, sectionName='Sect_VacInf', thicknessAssignment=FROM_SECTION)
     
     cells = c.getSequenceFromMask(mask=('[#211088 ]', ), )
     region = p.Set(cells=cells, name='Set_Layer_5')
     p = mdb.models[modelname].parts['Part-1']
-    p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
-        offsetType=MIDDLE_SURFACE, offsetField='', 
-        thicknessAssignment=FROM_SECTION)
+    #p.SectionAssignment(region=region, sectionName='Sect_VacInf', offset=0.0, 
+    #    offsetType=MIDDLE_SURFACE, offsetField='', 
+    #    thicknessAssignment=FROM_SECTION)
+    
+    p.SectionAssignment(region=region, sectionName='Sect_VacInf', thicknessAssignment=FROM_SECTION)
     
     cells = c.getSequenceFromMask(mask=('[#1820011 ]', ), )
     region = regionToolset.Region(cells=cells)
@@ -318,16 +351,26 @@ for i in range(0,len(MeshOnCircumferenceN)):
         fieldName='', additionalRotationType=ROTATION_ANGLE, 
         additionalRotationField='', angle=90.0, stackDirection=STACK_3)
     
-    
-    #------ Make BC's----
+    #---- Make Instance ----
     
     a = mdb.models[modelname].rootAssembly
     a = mdb.models[modelname].rootAssembly
     a.DatumCsysByDefault(CARTESIAN)
     p = mdb.models[modelname].parts['Part-1']
     a.Instance(name='Part-1-1', part=p, dependent=ON)
-    mdb.models[modelname].StaticStep(name='Step-1', previous='Initial', 
-        timeIncrementationMethod=FIXED, initialInc=0.01, noStop=OFF, nlgeom=ON)
+    
+    #mdb.models[modelname].StaticStep(name='Step-1', previous='Initial', 
+    #    maxNumInc=1000, initialInc=0.001, nlgeom=ON) 
+ 
+    #---- Make step ------
+ 
+    mdb.models[modelname].ImplicitDynamicsStep(name='Step-1', previous='Initial', maxNumInc=1000, maxInc=1.0, nlgeom=ON)    
+ 
+    mdb.models['Flat_1'].ImplicitDynamicsStep(name='Step-1', previous='Initial', 
+        application=QUASI_STATIC, maxInc=1.0, nohaf=OFF, amplitude=RAMP, 
+        alpha=DEFAULT, initialConditions=OFF, nlgeom=ON)    
+ 
+    #------ Make BC's----
     
     a = mdb.models[modelname].rootAssembly
     f1 = a.instances['Part-1-1'].faces
@@ -348,7 +391,7 @@ for i in range(0,len(MeshOnCircumferenceN)):
     faces1 = f1.getSequenceFromMask(mask=('[#0:2 #1084000 #6 ]', ), )
     region = a.Set(faces=faces1, name='Set-3')
     mdb.models[modelname].DisplacementBC(name='BC_Displacement', 
-        createStepName='Step-1', region=region, u1=-1.0, u2=UNSET, u3=UNSET, 
+        createStepName='Step-1', region=region, u1=-0.1, u2=UNSET, u3=UNSET, 
         ur1=0.0, ur2=0.0, ur3=0.0, amplitude=UNSET, fixed=OFF, 
         distributionType=UNIFORM, fieldName='', localCsys=None)
     
@@ -423,11 +466,48 @@ for i in range(0,len(MeshOnCircumferenceN)):
     f = p.faces
     p.assignStackDirection(referenceRegion=f[15], cells=pickedCells)
     
+    mdb.save()
+    
+    elemType1 = mesh.ElemType(elemCode=C3D8R, elemLibrary=STANDARD, 
+        kinematicSplit=AVERAGE_STRAIN, secondOrderAccuracy=OFF, 
+        hourglassControl=ENHANCED, distortionControl=DEFAULT)
+    elemType2 = mesh.ElemType(elemCode=C3D6, elemLibrary=STANDARD)
+    elemType3 = mesh.ElemType(elemCode=C3D4, elemLibrary=STANDARD)
+    p = mdb.models['Flat_1'].parts['Part-1']
+    c = p.cells
+    cells = c.getSequenceFromMask(mask=('[#1ffffff ]', ), )
+    pickedRegions =(cells, )
+    p.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2, 
+        elemType3))    
+
+    mdb.save()
     #---- ZEND EEEEEEEEEEEEEETTTTT!!!!! -----
     
     p.generateMesh()
+   
+    elemType1 = mesh.ElemType(elemCode=C3D8R, elemLibrary=STANDARD, 
+        kinematicSplit=AVERAGE_STRAIN, secondOrderAccuracy=OFF, 
+        hourglassControl=ENHANCED, distortionControl=DEFAULT)
+    elemType2 = mesh.ElemType(elemCode=C3D6, elemLibrary=STANDARD)
+    elemType3 = mesh.ElemType(elemCode=C3D4, elemLibrary=STANDARD)
+    p = mdb.models['Flat_1'].parts['Part-1']
+    c = p.cells
+    cells = c.getSequenceFromMask(mask=('[#1ffffff ]', ), )
+    pickedRegions =(cells, )
+    p.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2, 
+        elemType3))    
+   
+    #---- generate sets for UMAT --- 
+    
+    a = mdb.models['Flat_1'].rootAssembly
+    c1 = a.instances['Part-1-1'].cells
+    cells1 = c1.getSequenceFromMask(mask=('[#1ffffff ]', ), )
+    a.Set(cells=cells1, name='Set_UMAT')    
+
     mdb.save()
+
     #----- The Gnaaaaaaaarrrrr!!! arrrrggghhhh!!!!------
+   
     
     mdb.Job(name=jobname, model=modelname, description='', type=ANALYSIS, 
         atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
@@ -436,11 +516,56 @@ for i in range(0,len(MeshOnCircumferenceN)):
         modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='', 
         scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=1, 
         numGPUs=0)
-    mdb.jobs[jobname].submit(consistencyChecking=OFF)
-    
+        
     mdb.save()
     
+    #------ UMAT shitz ----------
+    
+    mdb.jobs[jobname].writeInput(consistencyChecking=OFF)
+    
+    f = open(writefile+"\\"+jobname+".inp", "r")
+    contents = f.readlines()
+    f.close()
+    
+    contents = [w.replace("*Material, name=GFRP\n", "*Material, name=GFRPNonUMAT\n") for w in contents]
+    
+    f = open(writefile+"\\"+"UMATInsert"+".txt", "r")
+    Insertcontents = f.readlines()
+    f.close()
 
+    m=0
+    for line in contents:
+    
+        if line=="** MATERIALS\n":
+            t=m+1
+            break
+        m=m+1
+    
+    for i in range(0,(len(Insertcontents))):
+        contents.insert(i+t,Insertcontents[i])
+    
+    f = open(writefile+"\\"+jobname+"_UMAT"+".inp", "w")
+    
+    for line in contents:
+        f.write(str(line))
+    f.close()    
+    
+    time.sleep(5) 
+    
+    mdb.JobFromInputFile(name=jobname+"_UMAT", 
+        inputFileName=writefile+"\\"+jobname+"_UMAT"+".inp", 
+        type=ANALYSIS, atTime=None, waitMinutes=0, waitHours=0, queue=None, 
+        memory=90, memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
+        explicitPrecision=SINGLE, nodalOutputPrecision=FULL, 
+        userSubroutine=writefile+'\\for\\UMAT.for', 
+        scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=1, 
+        numGPUs=0)
+    
+    mdb.save()
+    #------- Submit both -------
+    
+    mdb.jobs[jobname].submit(consistencyChecking=OFF)
+    mdb.jobs[jobname+"_UMAT"].submit(consistencyChecking=OFF)    
 
     #----- Result section LE22 -----
     time.sleep(5) 
@@ -449,6 +574,9 @@ for i in range(0,len(MeshOnCircumferenceN)):
         if 'COMPLETED' in open(joblogname).read():
             cont=True
             break
+        if 'Abaqus/Analysis exited with errors' in open(joblogname).read():
+            cont=False
+            break        
     if not cont:
         print('Analysis for %s not ran')%(jobname)
         
@@ -557,5 +685,125 @@ for i in range(0,len(MeshOnCircumferenceN)):
             CONTOURS_ON_DEF, ))
         x0 = session.xyDataObjects[NameOfFile2]
         session.writeXYReport(fileName=NameOfResultFile2, xyData=(x0, ))
+
+    #----- Result section LE22 -----
+  
+    time.sleep(5) 
+    for i in range(0,100):
+        time.sleep(5)
+        if 'COMPLETED' in open(joblognameUMAT).read():
+            cont=True
+            break
+        if 'Abaqus/Analysis exited with errors' in open(joblognameUMAT).read():
+            cont=False
+            break               
+    if not cont:
+        print('Analysis for %s not ran')%(jobnameUMAT)
+        
+    if cont:
+        session.viewports['Viewport: 1'].setValues(displayedObject=None)
+        
+        o3 = session.openOdb(
+            name=jobfolderUMAT)
+        
+        #----- Result section LE22 -----
+        
+        session.viewports['Viewport: 1'].setValues(displayedObject=o3)
+        
+        a = mdb.models[modelname].rootAssembly
+        
+        session.viewports['Viewport: 1'].setValues(displayedObject=a)
+        
+        session.mdbData.summary()
+        
+        session.viewports['Viewport: 1'].setValues(
+            displayedObject=session.odbs[jobfolderUMAT])
+        
+        session.viewports['Viewport: 1'].odbDisplay.display.setValues(
+            plotState=CONTOURS_ON_DEF)
+        
+        session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
+            variableLabel='LE', outputPosition=INTEGRATION_POINT, refinement=(
+            COMPONENT, 'LE22'), )
+        
+        session.Path(name='Path_Longitudinal', type=POINT_LIST, expression=((0.0, 10.0, 
+            5.0), (-100.0, 10.0, 5.0)))
+        
+        session.viewports['Viewport: 1'].odbDisplay.basicOptions.setValues(
+            sectionResults=USE_TOP)
+        
+        xyp = session.XYPlot(XYPlotNameUMAT)
+        
+        session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+        
+        xyp = session.xyPlots[XYPlotNameUMAT]
+        chartName = xyp.charts.keys()[0]
+        chart = xyp.charts[chartName]
+        pth = session.paths['Path_Longitudinal']
+        xy1 = xyPlot.XYDataFromPath(path=pth, includeIntersections=True, 
+            projectOntoMesh=True, pathStyle=UNIFORM_SPACING, numIntervals=100, 
+            projectionTolerance=0, shape=UNDEFORMED, labelType=TRUE_DISTANCE)
+        c1 = session.Curve(xyData=xy1)
+        chart.setValues(curvesToPlot=(c1, ), )
+        
+        pth = session.paths['Path_Longitudinal']
+        
+        session.XYDataFromPath(name=NameOfFileUMAT, path=pth, 
+            includeIntersections=True, projectOntoMesh=True, 
+            pathStyle=UNIFORM_SPACING, numIntervals=100, projectionTolerance=0, 
+            shape=UNDEFORMED, labelType=TRUE_DISTANCE)
+        
+        #------- Make report, reset visual ---------
+        
+        session.mdbData.summary()
+        xyp = session.xyPlots[XYPlotName]
+        session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+        x0 = session.xyDataObjects[NameOfFileUMAT]
+        session.writeXYReport(fileName=NameOfResultFile1UMAT, xyData=(x0, ))        
+    
+        #--------- Make LE11 --------------#
+    
+        session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
+            variableLabel='LE', outputPosition=INTEGRATION_POINT, refinement=(
+            COMPONENT, 'LE11'), )
+        
+        session.Path(name='Path_Transverse', type=POINT_LIST, expression=((0.0, 10.0, 
+            5.0), (0.0, 25.0, 5.0)))
+        
+        session.viewports['Viewport: 1'].odbDisplay.basicOptions.setValues(
+            sectionResults=USE_TOP)
+        
+        xyp = session.XYPlot(XYPlotName2UMAT)
+        
+        session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+        
+        xyp = session.xyPlots[XYPlotName2UMAT]
+        chartName = xyp.charts.keys()[0]
+        chart = xyp.charts[chartName]
+        pth = session.paths['Path_Transverse']
+        xy1 = xyPlot.XYDataFromPath(path=pth, includeIntersections=True, 
+            projectOntoMesh=True, pathStyle=UNIFORM_SPACING, numIntervals=100, 
+            projectionTolerance=0, shape=UNDEFORMED, labelType=TRUE_DISTANCE)
+        c1 = session.Curve(xyData=xy1)
+        chart.setValues(curvesToPlot=(c1, ), )
+        
+        pth = session.paths['Path_Transverse']
+        
+        session.XYDataFromPath(name=NameOfFile2UMAT, path=pth, 
+            includeIntersections=True, projectOntoMesh=True, 
+            pathStyle=UNIFORM_SPACING, numIntervals=100, projectionTolerance=0, 
+            shape=UNDEFORMED, labelType=TRUE_DISTANCE)
+        
+        #------- Make report, reset visual ---------
+        
+        session.mdbData.summary()
+        xyp = session.xyPlots[XYPlotName2UMAT]
+        session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+        odb = session.odbs[jobfolder]
+        session.viewports['Viewport: 1'].setValues(displayedObject=odb)
+        session.viewports['Viewport: 1'].odbDisplay.display.setValues(plotState=(
+            CONTOURS_ON_DEF, ))
+        x0 = session.xyDataObjects[NameOfFile2UMAT]
+        session.writeXYReport(fileName=NameOfResultFile2UMAT, xyData=(x0, ))
         
     break
