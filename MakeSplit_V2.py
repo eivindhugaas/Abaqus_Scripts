@@ -33,14 +33,15 @@ MeshCoarseN=[2,3,5,7,9,11,13,15,17,19,20,21,22,23,24] #Coarse
 
 Friction=np.arange(0.01,0.51,0.01)
 ID=140.
-Thickness=5.
+Thickness=3.2
 T=Thickness
+w=50.00
 L4=(ID/2)+((T/5)*4.)
 L3=(ID/2)+((T/5)*3.)
 L2=(ID/2)+((T/5)*2.)
 L1=(ID/2)+((T/5)*1.)
 
-writefile=r"C:\Users\eivinhug\NTNU\PhD\AbaqusModels\SplitDisk\Split_Friciton_study" #Work directory
+writefile=r"C:\Users\eivinhug\NTNU\PhD\AbaqusModels\SplitDisk\Split_Testing" #Work directory
 UMATdir=r'C:\Users\eivinhug\Documents\GitHub\CompDam_DGD\for'
 EnvFile=r'C:\Users\eivinhug\Documents\GitHub\CompDam_DGD\examples\abaqus_v6.env'
 
@@ -63,7 +64,7 @@ for i in range(0,len(Friction)):
     MRad=MeshRadN[-1]
     MSides=MeshSidesN[-1]
     MCoarse=MeshCoarseN[-1]
-    Fric=Friction[i]
+    Fric=0.2#Friction[i]
     n=n+1
 
     #--------- Initiate ----------
@@ -108,7 +109,7 @@ for i in range(0,len(Friction)):
     p = mdb.models[modelname].Part(name='Part-1', dimensionality=THREE_D, 
         type=DEFORMABLE_BODY)
     p = mdb.models[modelname].parts['Part-1']
-    p.BaseSolidExtrude(sketch=s, depth=25.0)
+    p.BaseSolidExtrude(sketch=s, depth=w/2)
     
     p = mdb.models[modelname].parts['Part-1']
 
@@ -483,7 +484,7 @@ for i in range(0,len(Friction)):
     p = mdb.models[modelname].Part(name='Part-2', dimensionality=THREE_D, 
         type=ANALYTIC_RIGID_SURFACE)
     p = mdb.models[modelname].parts['Part-2']
-    p.AnalyticRigidSurfExtrude(sketch=s, depth=25.0)
+    p.AnalyticRigidSurfExtrude(sketch=s, depth=w/2)
 
     p = mdb.models[modelname].parts['Part-2']
 
@@ -700,11 +701,11 @@ for i in range(0,len(Friction)):
         session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=100)        
         
         session.Path(name='Path_Circumferential', type=CIRCUMFERENTIAL, expression=((0, 0, 0), (0, 0, 
-            10), (0, 75, 10)), circleDefinition=ORIGIN_AXIS, numSegments=100, 
+            10), (0, 70.+T, 10)), circleDefinition=ORIGIN_AXIS, numSegments=100, 
             startAngle=0, endAngle=90, radius=CIRCLE_RADIUS)   
         
-        session.Path(name='Path_Transverse', type=POINT_LIST, expression=((-75.0, 0.0, 
-            10.0), (-75.0, 0.0, 25.0)))        
+        session.Path(name='Path_Transverse', type=POINT_LIST, expression=((-70.0-T, 0.0, 
+            10.0), (-70.-T, 0.0, w/2)))        
         
         #----- Result section LE22 -----
         
@@ -774,3 +775,6 @@ for i in range(0,len(Friction)):
             CONTOURS_ON_DEF, ))
         x0 = session.xyDataObjects[NameOfFile2]
         session.writeXYReport(fileName=NameOfResultFile2, xyData=(x0, ))
+
+        
+    break
